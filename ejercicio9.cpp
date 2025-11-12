@@ -39,7 +39,7 @@ void mochila3DO1(int maxSize, int maxLines, int cantArch)
 		// en todos los casos se resta 1 porque el vector comienza en 0 y el objeto actual esta dado por la matriz considerando el 0 como donde no hay objeto
 		int tamAct = tam[archAct - 1];	
 		int linAct = lineas[archAct - 1];
-		int punAct = puntos[archAct - 1];
+		int volAct = puntos[archAct - 1];
 		// Recorremos todas las columnas desde 0 (no tener capacidad) hasta la capacidad maxima inclusive
 		for (int maxSizeActual = 0; maxSizeActual <= maxSize; maxSizeActual++)
 		{
@@ -52,7 +52,7 @@ void mochila3DO1(int maxSize, int maxLines, int cantArch)
                     tab[archAct - 1][maxSizeActual][maxLinesActual];
                 } else {
                     // El valor maximo que podemos obtener es el valor del objeto actual + el valor maximo que podemos obtener sin usar el objeto actual (fila de arriba) y sin usar la capacidad que ocupa el objeto actual (restar la capacidad actual con el peso del objeto actual)
-                    int valorDeUsarElArchivo = punAct + tab[archAct - 1][maxSizeActual - tamAct][maxLinesActual - linAct];
+                    int valorDeUsarElArchivo = volAct + tab[archAct - 1][maxSizeActual - tamAct][maxLinesActual - linAct];
                     int valorDeNoUsarElArchivo = tab[archAct - 1][maxSizeActual][maxLinesActual];
                     tab[archAct][maxSizeActual][maxLinesActual] = max(valorDeUsarElArchivo, valorDeNoUsarElArchivo);
                 }
