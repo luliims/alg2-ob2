@@ -5,102 +5,97 @@
 
 using namespace std;
 
-// Movimientos: arriba, abajo, izquierda, derecha
-int movF[4] = { -1, 1, 0, 0 };
-int movC[4] = { 0, 0, -1, 1 };
-
-// Verifica si una posición es válida para visitar
-bool esValido(int f, int c, int M, int N, char **mapa, bool **visitado, char buscado) {
-    // Dentro del mapa
-    if (f < 0 || f >= M || c < 0 || c >= N)
-        return false;
-
-    // Ya visitado
-    if (visitado[f][c])
-        return false;
-
-    // Si es corredor ('C') o es el producto buscado → se puede avanzar
-    if (mapa[f][c] == 'C' || mapa[f][c] == buscado)
-        return true;
-
-    // Cualquier otro producto NO se puede atravesar
-    return false;
-}
-
-// Backtracking para encontrar el producto con menor cantidad de pasos
-void bt(int f, int c, int pasos, int M, int N, char **mapa, bool **visitado,
-        char buscado, int &mejorCantPasos, int indiceFCActual, int &indiceMejorPasos) {
-
-    // Si ya superamos el mejor camino global, no vale la pena seguir
-    if (pasos >= mejorCantPasos)
-        return;
-
-    // Si encontramos el producto
-    if (mapa[f][c] == buscado) {
-        mejorCantPasos = pasos;
-        indiceMejorPasos = indiceFCActual;
+void buscarProducto(char** mapa, int M, int N, char producto, 
+                    int fila, int col, bool** visitado, 
+                    int pasosActuales, int& mejorCantPasos, 
+                    int indiceFCActual, int& indiceMejorPasos) {
+    if (pasosActuales >= mejorCantPasos) {
         return;
     }
-
-    visitado[f][c] = true;
-
-    // Probar las 4 direcciones
-    for (int i = 0; i < 4; i++) {
-        int nf = f + movF[i];
-        int nc = c + movC[i];
-
-        if (esValido(nf, nc, M, N, mapa, visitado, buscado)) {
-            bt(nf, nc, pasos + 1, M, N, mapa, visitado,
-               buscado, mejorCantPasos, indiceFCActual, indiceMejorPasos);
+    
+    if (mapa[fila][col] == producto) {
+        if (pasosActuales < mejorCantPasos) {
+            mejorCantPasos = pasosActuales;
+            indiceMejorPasos = indiceFCActual;
         }
+        return;
     }
-
-    visitado[f][c] = false;  // backtracking
-}
-
-int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
-
-    char buscado;
-    cin >> buscado;
-
-    int P;
-    cin >> P;
-
-    // Variables globales reutilizadas para todos los FCs
-    int mejorCantPasos = 999999999;  // suficientemente grande
-    int indiceMejorPasos = 1;
-
-    for (int idx = 1; idx <= P; idx++) {
-
-        int M, N;
-        cin >> M >> N;
-
-        // Crear mapa
-        char **mapa = new char*[M];
-        for (int i = 0; i < M; i++) {
-            mapa[i] = new char[N];
-            for (int j = 0; j < N; j++) {
-                cin >> mapa[i][j];
+    
+    int dFila[] = {-1, 1, 0, 0};
+    int dCol[] = {0, 0, -1, 1};
+    
+    for (int i = 0; i < 4; i++) {
+        int nuevaFila = fila + dFila[i];
+        int nuevaCol = col + dCol[i];
+        
+        if (nuevaFila >= 0 && nuevaFila < M && nuevaCol >= 0 && nuevaCol < N) {
+            if (!visitado[nuevaFila][nuevaCol] && 
+                (mapa[nuevaFila][nuevaCol] == 'C' || mapa[nuevaFila][nuevaCol] == producto)) {
+                
+                visitado[nuevaFila][nuevaCol] = true;
+                buscarProducto(mapa, M, N, producto, nuevaFila, nuevaCol, 
+                              visitado, pasosActuales + 1, mejorCantPasos, 
+                              indiceFCActual, indiceMejorPasos);
+                visitado[nuevaFila][nuevaCol] = false; 
             }
         }
+    }
+}
 
-        // Crear matriz visitados
-        bool **visitado = new bool*[M];
-        for (int i = 0; i < M; i++) {
-            visitado[i] = new bool[N];
-            for (int j = 0; j < N; j++)
-                visitado[i][j] = false;
+bool** crearMatrizVisitados(int filas, int columnas) {
+    bool** visitado = new bool*[filas];
+    for (int i = 0; i < filas; i++) {
+        visitado[i] = new bool[columnas];
+        for (int j = 0; j < columnas; j++) {
+            visitado[i][j] = false;
         }
+    }
+    return visitado;
+}
 
-        // Solo explorar si la posición inicial es válida (como en el laberinto del profe)
-        if (esValido(0, 0, M, N, mapa, visitado, buscado)) {
-            bt(0, 0, 0, M, N, mapa, visitado,
-               buscado, mejorCantPasos, idx, indiceMejorPasos);
+char** crearMapa(int filas, int columnas) {
+    char** mapa = new char*[filas];
+    for (int i = 0; i < filas; i++) {
+        mapa[i] = new char[columnas];
+    }
+    return mapa;
+}
+
+void leerMapa(char** mapa, int filas, int columnas) {
+    for (int i = 0; i < filas; i++) {
+        for (int j = 0; j < columnas; j++) {
+            cin >> mapa[i][j];
         }
+    }
+}
 
-        // Liberar memoria
+int main()
+{
+    char producto;
+    int P;
+    
+    cin >> producto;
+    cin >> P;
+    
+    int mejorCantPasos = numeric_limits<int>::max();
+    int indiceMejorPasos = 1;
+    
+    for (int fc = 1; fc <= P; fc++) {
+        int M, N;
+        cin >> M >> N;
+        
+        char** mapa = crearMapa(M, N);
+
+        leerMapa(mapa, M, N);
+        
+        bool** visitado = crearMatrizVisitados(M, N);
+       
+        if (mapa[0][0] == 'C' || mapa[0][0] == producto) {
+            visitado[0][0] = true;
+            buscarProducto(mapa, M, N, producto, 0, 0, visitado, 
+                          0, mejorCantPasos, fc, indiceMejorPasos);
+        }
+        
         for (int i = 0; i < M; i++) {
             delete[] mapa[i];
             delete[] visitado[i];
@@ -108,8 +103,8 @@ int main() {
         delete[] mapa;
         delete[] visitado;
     }
-
-    cout << indiceMejorPasos << " " << mejorCantPasos << "\n";
-
+    
+    cout << indiceMejorPasos << " " << mejorCantPasos << endl;
+    
     return 0;
 }
