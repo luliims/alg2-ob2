@@ -113,37 +113,29 @@ int main()
     
     while (posicionActual < F) {
         long long alcanceMaximo = posicionActual + potenciaActual;
-        // Si ya podemos llegar al destino
         if (alcanceMaximo >= F) {
             cout << mejorasUsadas << endl;
             delete[] pozos;
             delete[] mejoras;
             return 0;
         }
-        // Agregar todas las mejoras alcanzables al heap
         while (indiceMejora < M && mejoras[indiceMejora].posicion <= alcanceMaximo) {
             heap.push(mejoras[indiceMejora]);
             indiceMejora++;
         }
-        // Encontrar hasta dónde podemos avanzar realmente (considerando pozos)
         long long nuevaPosicion = alcanceMaximo;
-        // Buscar el primer pozo que nos bloquea completamente
         for (int i = 0; i < N; i++) {
-            // Si el pozo empieza después de nuestro alcance, no nos afecta
             if (pozos[i].inicio > alcanceMaximo) {
                 break;
             }
-            // Si el pozo termina antes de nuestra posición actual, ya lo pasamos
             if (pozos[i].fin < posicionActual) {
                 continue;
             }
             if (pozos[i].inicio <= alcanceMaximo && pozos[i].fin >= alcanceMaximo) {
-                // Solo podemos avanzar hasta antes del pozo
                 nuevaPosicion = pozos[i].inicio - 1;
                 break;
             }
         }
-        // Si no podemos avanzar, necesitamos una mejora
         if (nuevaPosicion <= posicionActual) {
             if (heap.esVacio()) {
                 cout << "Imposible" << endl;
